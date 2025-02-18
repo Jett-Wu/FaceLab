@@ -4,15 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.getElementById('generate-btn');
     const randomizeBtn = document.getElementById('randomize-btn');
     const downloadBtn = document.getElementById('download-btn');
+    const randomColorBtn = document.getElementById('random-color-btn');
     const styleSelect = document.getElementById('styleSelect');
     const bgColorInput = document.getElementById('bgColor');
     const primaryColorInput = document.getElementById('primaryColor');
     const complexityInput = document.getElementById('complexity');
     const rotationInput = document.getElementById('rotation');
-    const animateCheckbox = document.getElementById('animate');
-    const languageSelect = document.getElementById('language');
     const colorfulnessInput = document.getElementById('colorfulness');
-    const colorfulnessValue = document.getElementById('colorfulnessValue');
     
     let animationFrame;
     let rotation = 0;
@@ -24,36 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 设置画布的显示大小（通过CSS）
     canvas.style.width = '400px';   // 保持显示大小不变
     canvas.style.height = '400px';  // 保持显示大小不变
-
-    // 获取滑块和显示数值的元素
-    const complexitySlider = document.getElementById('complexity');
-    const complexityValue = document.getElementById('complexityValue');
-    const rotationSlider = document.getElementById('rotation');
-    const rotationValue = document.getElementById('rotationValue');
-
-    // 监听复杂度滑块的变化
-    complexitySlider.addEventListener('input', function() {
-        // 格式化显示为两位小数
-        complexityValue.textContent = Number(this.value).toFixed(2);
-    });
-
-    // 监听旋转角度滑块的变化
-    rotationSlider.addEventListener('input', function() {
-        // 格式化显示为两位小数
-        const value = Number(this.value);
-        rotationValue.textContent = value.toFixed(0).padStart(3, ' ') + '°';
-    });
-
-    // 监听色彩丰富度滑块的变化
-    colorfulnessInput.addEventListener('input', function() {
-        // 格式化显示为两位小数
-        colorfulnessValue.textContent = Number(this.value).toFixed(2);
-    });
-
-    // 设置初始值
-    complexityValue.textContent = Number(complexitySlider.value).toFixed(2);
-    rotationValue.textContent = Number(rotationSlider.value).toFixed(0).padStart(3, ' ') + '°';
-    colorfulnessValue.textContent = Number(colorfulnessInput.value).toFixed(2);
 
     // 添加预设的配色方案
     const colorSchemes = [
@@ -212,58 +180,348 @@ document.addEventListener('DOMContentLoaded', () => {
         { bg: '#2C061F', primary: '#374045' },  // 暗物质
     ];
 
-    // 生成头像的主要函数
+    // 修改生成头像的函数
     function generateAvatar(style) {
-        // 取消任何正在进行的动画
-        cancelAnimationFrame(animationFrame);
+        // 清除任何现有的动画
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+        }
+
+        // 隐藏预览占位符
+        const placeholder = document.querySelector('.preview-placeholder');
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+
+        // 根据风格生成头像
+        if (style === 'pixel') {
+            generatePixelAvatar();
+        } else if (style === 'geometric') {
+            generateGeometricAvatar();
+        }
+    }
+
+    // 修改生成几何风格头像的函数
+    function generateGeometricAvatar() {
+        const complexity = parseFloat(complexityInput.value);
+        const colorfulness = parseFloat(colorfulnessInput.value);
         
-        // 清除画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // 使用二次函数增加高复杂度时的形状数量
+        const shapes = Math.floor(3 + (complexity * 15) + (complexity * complexity * 12));
         
-        // 设置背景
+        // 使用新的颜色生成函数
+        const colors = generateColorVariants(primaryColorInput.value, colorfulness);
+
+        // 清除画布并设置背景
         ctx.fillStyle = bgColorInput.value;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 保存当前状态
+        // 保存初始状态
         ctx.save();
         
-        // 应用整体旋转
+        // 应用整体旋转（在中心点）
         const rotation = parseFloat(rotationInput.value);
         if (rotation !== 0) {
+            // 先清除整个画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 在旋转前填充背景
+            ctx.fillStyle = bgColorInput.value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
             // 移动到中心点进行旋转
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.rotate(rotation * Math.PI / 180);
             ctx.translate(-canvas.width/2, -canvas.height/2);
+            
+            // 创建一个比画布稍大的背景矩形，确保旋转后没有空隙
+            const diagonal = Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height);
+            const offset = (diagonal - canvas.width) / 2;
+            ctx.fillStyle = bgColorInput.value;
+            ctx.fillRect(-offset, -offset, diagonal, diagonal);
         }
 
-        // 根据风格生成头像
-        switch(style) {
-            case 'pixel':
-                generatePixelAvatar();
+        // 修改形状大小范围
+        const minSize = 60 + (complexity * 20);  // 最小尺寸范围：60-80
+        const maxSize = 450 - (complexity * 320); // 最大尺寸范围：130-450 (减少了50)
+        
+        // 修改网格大小和随机分布逻辑
+        const gridSize = Math.floor(4 + complexity * 4); // 增加基础网格密度
+        const cellWidth = canvas.width / gridSize;
+        const cellHeight = canvas.height / gridSize;
+        
+        // 创建更随机的可用位置数组
+        let availablePositions = [];
+        
+        // 添加带有随机偏移的网格点
+        for(let i = 0; i < gridSize; i++) {
+            for(let j = 0; j < gridSize; j++) {
+                // 增加随机偏移量
+                const offsetX = (Math.random() - 0.5) * cellWidth * 0.8;
+                const offsetY = (Math.random() - 0.5) * cellHeight * 0.8;
+                
+                availablePositions.push({
+                    x: (j + 0.5) * cellWidth + offsetX,
+                    y: (i + 0.5) * cellHeight + offsetY,
+                    used: false
+                });
+            }
+        }
+        
+        // 添加完全随机的点
+        const randomPoints = Math.floor(gridSize * gridSize * 0.5); // 添加50%的随机点
+        for(let i = 0; i < randomPoints; i++) {
+            availablePositions.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                used: false
+            });
+        }
+        
+        // 修改形状生成的逻辑
+        for(let i = 0; i < shapes; i++) {
+            const size = minSize + Math.random() * (maxSize - minSize);
+            
+            // 尝试找到一个较好的位置（减少重叠）
+            let bestPosition = null;
+            let bestOverlap = Infinity;
+            const attempts = 10; // 尝试次数
+            
+            for(let attempt = 0; attempt < attempts; attempt++) {
+                // 随机选择一个未使用的位置
+                let availableIndices = availablePositions
+                    .map((pos, index) => ({ pos, index }))
+                    .filter(item => !item.pos.used);
+                    
+                if (availableIndices.length === 0) {
+                    availableIndices = availablePositions
+                        .map((pos, index) => ({ pos, index }));
+                }
+                
+                const randomIndex = Math.floor(Math.random() * availableIndices.length);
+                const testPosition = availableIndices[randomIndex].pos;
+                
+                // 计算与已使用位置的重叠程度
+                let totalOverlap = 0;
+                for(const usedPos of availablePositions.filter(p => p.used)) {
+                    const dx = testPosition.x - usedPos.x;
+                    const dy = testPosition.y - usedPos.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minSafeDistance = size * 0.8; // 期望的最小安全距离
+                    
+                    if (distance < minSafeDistance) {
+                        totalOverlap += (minSafeDistance - distance);
+                    }
+                }
+                
+                // 如果找到更好的位置，更新最佳位置
+                if (totalOverlap < bestOverlap) {
+                    bestOverlap = totalOverlap;
+                    bestPosition = testPosition;
+                }
+                
+                // 如果找到一个几乎没有重叠的位置，立即使用它
+                if (totalOverlap < size * 0.1) {
+                    break;
+                }
+            }
+            
+            // 使用找到的最佳位置
+            bestPosition.used = true;
+            
+            // 添加随机偏移，但根据重叠程度调整偏移范围
+            const maxOffset = Math.min(cellWidth, cellHeight) * 0.3 * (1 - bestOverlap / (size * 2));
+            const x = bestPosition.x + (Math.random() - 0.5) * maxOffset;
+            const y = bestPosition.y + (Math.random() - 0.5) * maxOffset;
+            
+            // 确保形状在画布内
+            const safeX = Math.max(size/2, Math.min(canvas.width - size/2, x));
+            const safeY = Math.max(size/2, Math.min(canvas.height - size/2, y));
+            
+            // 生成形状
+            const shapeType = Math.floor(Math.random() * 4);
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            ctx.fillStyle = color;
+            ctx.strokeStyle = adjustColor(color, -30);
+            ctx.lineWidth = 3;
+            
+            // 随机选择是否使用填充或描边
+            const useFill = Math.random() > 0.3;
+            
+            // 保存当前状态
+            ctx.save();
+            
+            // 对形状进行随机旋转
+            ctx.translate(safeX, safeY);
+            const rotation = Math.random() * Math.PI * 2;
+            ctx.rotate(rotation);
+            ctx.translate(-safeX, -safeY);
+            
+            switch(shapeType) {
+                case 0: // 圆形
+                    ctx.beginPath();
+                    ctx.arc(safeX, safeY, size/2, 0, Math.PI * 2);
+                    break;
+                case 1: // 三角形
+                    drawPolygon(safeX, safeY, size/2, 3, rotation);
+                    break;
+                case 2: // 矩形
+                    ctx.beginPath();
+                    ctx.rect(safeX - size/2, safeY - size/2, size, size);
                 break;
-            case 'geometric':
-                generateGeometricAvatar();
+                case 3: // 多边形
+                    drawPolygon(safeX, safeY, size/2, 5 + Math.floor(Math.random() * 3), rotation);
                 break;
         }
+            
+            if(useFill) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
 
         // 恢复状态
-        ctx.restore();
+            ctx.restore();
+        }
 
-        // 如果启用动画，开始动画循环
-        if (animateCheckbox && animateCheckbox.checked) {
-            startAnimation();
+        // 在生成完所有形状后恢复状态
+        ctx.restore();
+    }
+
+    // 修改生成像素风格头像的函数
+    function generatePixelAvatar() {
+        const complexity = parseFloat(complexityInput.value);
+        const colorfulness = parseFloat(colorfulnessInput.value);
+        
+        // 计算目标像素大小
+        const targetSize = 200 - (complexity * 180);
+        
+        // 找到最接近目标大小的因数
+        function findClosestFactor(target) {
+            // 获取所有可能的因数
+            const factors = [];
+            for (let i = 20; i <= 200; i++) {
+                if (canvas.width % i === 0 && canvas.height % i === 0) {
+                    factors.push(i);
+                }
+            }
+            
+            // 如果没有找到因数，返回默认值
+            if (factors.length === 0) return 40;
+            
+            // 找到最接近目标值的因数
+            return factors.reduce((prev, curr) => {
+                return Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev;
+            });
+        }
+        
+        // 获取实际使用的像素大小
+        const pixelSize = findClosestFactor(targetSize);
+        
+        // 计算网格大小
+        const gridSize = Math.floor(canvas.width / pixelSize);
+        
+        // 使用新的颜色生成函数
+        const colors = generateColorVariants(primaryColorInput.value, colorfulness);
+
+        // 清除画布
+        ctx.fillStyle = bgColorInput.value;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 根据复杂度调整像素密度
+        const density = 0.3 + (complexity * 0.4);
+        
+        // 计算网格大小
+        const gridWidth = canvas.width / pixelSize;
+        const gridHeight = canvas.height / pixelSize;
+        
+        // 在画布上生成像素
+        for(let x = 0; x < gridWidth; x++) {
+            for(let y = 0; y < gridHeight; y++) {
+                if(Math.random() < density) {
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                    ctx.fillRect(
+                        x * pixelSize,
+                        y * pixelSize,
+                        pixelSize,
+                        pixelSize
+                    );
+                }
+            }
         }
     }
 
-    function startAnimation() {
-        rotation += 0.02;
-        ctx.save();
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.rotate(rotation);
-        ctx.translate(-canvas.width/2, -canvas.height/2);
-        generateAvatar(styleSelect.value);
-        ctx.restore();
-        animationFrame = requestAnimationFrame(startAnimation);
+    // 修改颜色调整函数，使其产生更明显的颜色差异
+    function adjustColor(color, amount) {
+        const hex = color.replace('#', '');
+        const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+        const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+        const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+        
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    // 添加RGB和HSL转换的辅助函数
+    function rgbToHsl(r, g, b) {
+        r /= 255, g /= 255, b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0;
+            } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return [h, s, l];
+    }
+
+    function hslToRgb(h, s, l) {
+        let r, g, b;
+
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+
+        return [r * 255, g * 255, b * 255];
+    }
+
+    // 添加绘制多边形的辅助函数
+    function drawPolygon(x, y, radius, sides, rotation = 0) {
+        ctx.beginPath();
+        for (let i = 0; i < sides; i++) {
+            const angle = (i * 2 * Math.PI / sides) + rotation;
+            const pointX = x + radius * Math.cos(angle);
+            const pointY = y + radius * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(pointX, pointY);
+            } else {
+                ctx.lineTo(pointX, pointY);
+            }
+        }
+        ctx.closePath();
     }
 
     // 修改生成颜色变体的函数
@@ -399,278 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
             Math.round(rgb[2]).toString(16).padStart(2, '0');
     }
 
-    // 修改像素风格头像生成函数
-    function generatePixelAvatar() {
-        const complexity = parseFloat(complexityInput.value);
-        const colorfulness = parseFloat(colorfulnessInput.value);
-        
-        // 计算可用的像素尺寸（必须是画布尺寸的因数）
-        const possibleSizes = [];
-        for (let i = 10; i <= 100; i++) {
-            if (canvas.width % i === 0 && canvas.height % i === 0) {
-                possibleSizes.push(i);
-            }
-        }
-        
-        // 根据复杂度选择合适的像素大小
-        const sizeIndex = Math.floor((1 - complexity) * (possibleSizes.length - 1));
-        const pixelSize = possibleSizes[sizeIndex];
-        
-        // 使用新的颜色生成函数
-        const colors = generateColorVariants(primaryColorInput.value, colorfulness);
-
-        // 清除画布
-        ctx.fillStyle = bgColorInput.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 根据复杂度调整像素密度
-        const density = 0.3 + (complexity * 0.4);
-        
-        // 计算网格大小
-        const gridWidth = canvas.width / pixelSize;
-        const gridHeight = canvas.height / pixelSize;
-        
-        // 在画布上生成像素
-        for(let x = 0; x < gridWidth; x++) {
-            for(let y = 0; y < gridHeight; y++) {
-                if(Math.random() < density) {
-                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-                    ctx.fillRect(
-                        x * pixelSize,
-                        y * pixelSize,
-                        pixelSize,
-                        pixelSize
-                    );
-                }
-            }
-        }
-    }
-
-    // 辅助函数：调整颜色明度
-    function adjustColor(color, amount) {
-        const hex = color.replace('#', '');
-        const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
-        const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
-        const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
-        
-        return '#' + 
-            r.toString(16).padStart(2, '0') + 
-            g.toString(16).padStart(2, '0') + 
-            b.toString(16).padStart(2, '0');
-    }
-
-    // 添加RGB和HSL转换的辅助函数
-    function rgbToHsl(r, g, b) {
-        r /= 255, g /= 255, b /= 255;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        let h, s, l = (max + min) / 2;
-
-        if (max === min) {
-            h = s = 0;
-            } else {
-            const d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            switch (max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return [h, s, l];
-    }
-
-    function hslToRgb(h, s, l) {
-        let r, g, b;
-
-        if (s === 0) {
-            r = g = b = l;
-        } else {
-            const hue2rgb = (p, q, t) => {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                return p;
-            };
-
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
-        }
-
-        return [r * 255, g * 255, b * 255];
-    }
-
-    // 生成几何风格头像
-    function generateGeometricAvatar() {
-        const complexity = parseFloat(complexityInput.value);
-        const colorfulness = parseFloat(colorfulnessInput.value);
-        
-        // 使用二次函数增加高复杂度时的形状数量：
-        // 复杂度为0时约3个形状
-        // 复杂度为0.5时约13个形状
-        // 复杂度为1时约30个形状
-        const shapes = Math.floor(3 + (complexity * 15) + (complexity * complexity * 12));
-        
-        // 生成一个随机的整体旋转角度
-        const globalRotation = Math.floor(Math.random() * 360);
-        // 更新旋转角度显示
-        rotationValue.textContent = globalRotation.toString().padStart(3, ' ') + '°';
-        rotationInput.value = globalRotation;
-        
-        // 使用新的颜色生成函数
-        const colors = generateColorVariants(primaryColorInput.value, colorfulness);
-
-        // 修改形状大小范围，大幅增加低复杂度时的形状大小
-        const minSize = 60 + (complexity * 20);  // 最小尺寸范围：60-80
-        const maxSize = 400 - (complexity * 320); // 最大尺寸范围：80-400
-        
-        // 根据复杂度动态调整网格大小，减少网格数以适应更大的形状
-        const gridSize = Math.floor(3 + complexity * 3); // 复杂度0时3x3，复杂度1时6x6
-        const cellWidth = canvas.width / gridSize;
-        const cellHeight = canvas.height / gridSize;
-        
-        // 创建可用位置数组，包括网格点和网格中点
-        let availablePositions = [];
-        
-        // 添加网格点
-        for(let i = 0; i < gridSize; i++) {
-            for(let j = 0; j < gridSize; j++) {
-                availablePositions.push({
-                    x: (j + 0.5) * cellWidth,
-                    y: (i + 0.5) * cellHeight,
-                    used: false
-                });
-            }
-        }
-        
-        // 根据复杂度决定是否添加网格中点
-        if (complexity > 0.5) {
-            for(let i = 0; i < gridSize - 1; i++) {
-                for(let j = 0; j < gridSize - 1; j++) {
-                    availablePositions.push({
-                        x: (j + 1) * cellWidth,
-                        y: (i + 1) * cellHeight,
-                        used: false
-                    });
-                }
-            }
-        }
-        
-        // 生成所有形状
-        for(let i = 0; i < shapes; i++) {
-            const size = minSize + Math.random() * (maxSize - minSize);
-            
-            // 根据复杂度调整最小距离要求
-            const minDistanceMultiplier = 1 - (complexity * 0.6); // 复杂度越高，最小距离要求越小
-            
-            // 找到最近的未使用位置
-            let bestPosition = null;
-            let maxMinDistance = -1;
-            
-            // 从未使用的位置中找到合适的点
-            const unusedPositions = availablePositions.filter(pos => !pos.used);
-            for(const pos of unusedPositions) {
-                let minDistance = Number.MAX_VALUE;
-                
-                // 计算到所有已使用位置的最小距离
-                for(const usedPos of availablePositions.filter(p => p.used)) {
-                    const distance = Math.sqrt(
-                        Math.pow(pos.x - usedPos.x, 2) + 
-                        Math.pow(pos.y - usedPos.y, 2)
-                    );
-                    minDistance = Math.min(minDistance, distance);
-                }
-                
-                // 根据复杂度调整距离判断
-                const adjustedDistance = minDistance * minDistanceMultiplier;
-                if (maxMinDistance < adjustedDistance) {
-                    maxMinDistance = adjustedDistance;
-                    bestPosition = pos;
-                }
-            }
-            
-            // 如果没有找到合适的位置，随机选择一个未使用的位置
-            if (!bestPosition && unusedPositions.length > 0) {
-                bestPosition = unusedPositions[Math.floor(Math.random() * unusedPositions.length)];
-            } else if (!bestPosition) {
-                // 如果所有位置都被使用，随机选择一个位置
-                bestPosition = availablePositions[Math.floor(Math.random() * availablePositions.length)];
-            }
-            
-            // 标记位置为已使用
-            bestPosition.used = true;
-            
-            // 添加随机偏移，复杂度越高偏移越小
-            const maxOffset = Math.min(cellWidth, cellHeight) * 0.2 * (1 - complexity * 0.5);
-            const x = bestPosition.x + (Math.random() - 0.5) * maxOffset;
-            const y = bestPosition.y + (Math.random() - 0.5) * maxOffset;
-            
-            // 确保形状不会完全超出画布
-            const safeX = Math.max(size/2, Math.min(canvas.width - size/2, x));
-            const safeY = Math.max(size/2, Math.min(canvas.height - size/2, y));
-            
-            generateShape(safeX, safeY, size, colors, complexity);
-        }
-    }
-
-    // 辅助函数：生成单个形状
-    function generateShape(x, y, size, colors, complexity) {
-        const shapeType = Math.floor(Math.random() * 4);
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
-        ctx.fillStyle = color;
-        ctx.strokeStyle = adjustColor(color, -20);
-        ctx.lineWidth = 2 + (1 - complexity);
-        
-        // 只在高复杂度时允许少量重叠
-        if(complexity > 0.7 && Math.random() < 0.3) {
-            ctx.globalAlpha = 0.9;
-        } else {
-        ctx.beginPath();
-            ctx.globalAlpha = 1;
-        }
-        
-        // 保存当前状态
-        ctx.save();
-        
-        // 对形状进行随机旋转
-        ctx.translate(x, y);
-        const rotation = Math.random() * Math.PI * 2; // 随机旋转 0-360 度
-        ctx.rotate(rotation);
-        ctx.translate(-x, -y);
-        
-        switch(shapeType) {
-            case 0: // 圆形
-                ctx.beginPath();
-                ctx.arc(x, y, size/2, 0, Math.PI * 2);
-                break;
-            case 1: // 三角形
-                drawPolygon(x, y, size/2, 3, rotation); // 传入旋转角度
-                break;
-            case 2: // 矩形
-                ctx.beginPath();
-                ctx.rect(x - size/2, y - size/2, size, size);
-                break;
-            case 3: // 多边形
-                drawPolygon(x, y, size/2, 5 + Math.floor(complexity * 3), rotation); // 传入旋转角度
-                break;
-        }
-        
-        if(Math.random() > 0.5) {
-        ctx.fill();
-        } else {
-            ctx.stroke();
-        }
-        
-        // 恢复状态
-        ctx.restore();
-    }
-
     // 事件监听器
     generateBtn.addEventListener('click', () => {
         // 清除画布
@@ -678,9 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 如果是几何风格，随机设置旋转角度
         if (styleSelect.value === 'geometric') {
-            const newRotation = Math.floor(Math.random() * 360);
-            rotationInput.value = newRotation;
-            rotationValue.textContent = newRotation.toString().padStart(3, ' ') + '°';
+            rotationInput.value = Math.floor(Math.random() * 360);
         }
         
         // 生成新头像
@@ -698,19 +682,18 @@ document.addEventListener('DOMContentLoaded', () => {
         bgColorInput.value = scheme.bg;
         primaryColorInput.value = scheme.primary;
         
-        // 随机复杂度 (0-1，保留两位小数)
-        const newComplexity = (Math.random()).toFixed(2);
-        complexityInput.value = newComplexity;
-        complexityValue.textContent = newComplexity;
+        // 随机复杂度
+        complexityInput.value = Math.random().toFixed(2);
         
-        // 只在非几何风格时设置随机旋转角度的显示
+        // 随机旋转角度（仅在非几何风格时）
         if (styleSelect.value !== 'geometric') {
-            const newRotation = Math.floor(Math.random() * 360);
-            rotationInput.value = newRotation;
-            rotationValue.textContent = newRotation.toString().padStart(3, ' ') + '°';
+            rotationInput.value = Math.floor(Math.random() * 360);
         }
         
-        // 使用当前选中的风格生成新的头像
+        // 随机色彩丰富度
+        colorfulnessInput.value = Math.random().toFixed(2);
+        
+        // 生成新头像
         generateAvatar(styleSelect.value);
     });
 
@@ -721,9 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
     });
 
-    // 添加随机颜色按钮的事件监听器
-    const randomColorBtn = document.getElementById('random-color-btn');
-
+    // 随机颜色按钮事件
     randomColorBtn.addEventListener('click', () => {
         // 从预设配色方案中随机选择一个
         const scheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
@@ -736,44 +717,35 @@ document.addEventListener('DOMContentLoaded', () => {
         generateAvatar(styleSelect.value);
     });
 
-    // 辅助函数
-    function drawPolygon(x, y, radius, sides, rotation = 0) {
-        ctx.beginPath();
-        for(let i = 0; i < sides; i++) {
-            const angle = rotation + (i * 2 * Math.PI / sides) - Math.PI / 2;
-            const px = x + radius * Math.cos(angle);
-            const py = y + radius * Math.sin(angle);
-            if(i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-    }
-
-    // 修改风格切换事件监听器
+    // 风格切换事件
     styleSelect.addEventListener('change', function() {
         const rotationControl = document.querySelector('.rotation-control');
         
+        // 始终隐藏旋转控制，但在几何风格下保持功能
+        rotationControl.style.display = 'none';
+        
         if (this.value === 'geometric') {
-            // 完全隐藏旋转角度控制
-            rotationControl.style.display = 'none';
-            
-            // 自动设置一个随机旋转角度（但不显示）
+            // 在几何风格下设置随机旋转值，但不显示控制器
             rotationInput.value = Math.floor(Math.random() * 360);
         } else {
-            // 恢复正常显示
-            rotationControl.style.display = 'block';
+            // 在其他风格下禁用旋转
+            rotationInput.value = 0;
         }
+        
+        // 重新生成头像
+        generateAvatar(this.value);
     });
 
-    // 修改页面加载时的初始化
+    // 初始化页面时的处理
     document.addEventListener('DOMContentLoaded', () => {
-        const rotationControl = document.querySelector('.rotation-control');
+        const placeholder = document.querySelector('.preview-placeholder');
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+        }
         
+        const rotationControl = document.querySelector('.rotation-control');
         if (styleSelect.value === 'geometric') {
-            // 完全隐藏旋转角度控制
             rotationControl.style.display = 'none';
-            
-            // 自动设置一个随机旋转角度（但不显示）
             rotationInput.value = Math.floor(Math.random() * 360);
         }
     });

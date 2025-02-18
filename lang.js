@@ -17,7 +17,8 @@ const translations = {
         generateBtn: "生成头像",
         randomize: "随机生成",
         download: "下载头像",
-        randomColor: "随机颜色"
+        randomColor: "随机颜色",
+        previewPlaceholder: "预览图片"
     },
     en: {
         title: "Create Your Perfect Avatar",
@@ -37,7 +38,8 @@ const translations = {
         generateBtn: "Generate Avatar",
         randomize: "Randomize",
         download: "Download",
-        randomColor: "Random Colors"
+        randomColor: "Random Colors",
+        previewPlaceholder: "Preview Image"
     },
     es: {
         title: "Crea Tu Avatar Perfecto",
@@ -57,7 +59,8 @@ const translations = {
         generateBtn: "Generar Avatar",
         randomize: "Aleatorio",
         download: "Descargar",
-        randomColor: "Colores Aleatorios"
+        randomColor: "Colores Aleatorios",
+        previewPlaceholder: "Imagen de vista previa"
     },
     fr: {
         title: "Créez Votre Avatar Parfait",
@@ -76,7 +79,8 @@ const translations = {
         generateBtn: "Générer l'Avatar",
         randomize: "Aléatoire",
         download: "Télécharger",
-        randomColor: "Couleurs Aléatoires"
+        randomColor: "Couleurs Aléatoires",
+        previewPlaceholder: "Image de prévisualisation"
     },
     de: {
         title: "Erstellen Sie Ihren Perfekten Avatar",
@@ -95,7 +99,8 @@ const translations = {
         generateBtn: "Avatar Erstellen",
         randomize: "Zufällig",
         download: "Herunterladen",
-        randomColor: "Zufällige Farben"
+        randomColor: "Zufällige Farben",
+        previewPlaceholder: "Vorschaubild"
     },
     ja: {
         title: "あなただけのアバターを作成",
@@ -114,7 +119,8 @@ const translations = {
         generateBtn: "アバター生成",
         randomize: "ランダム",
         download: "ダウンロード",
-        randomColor: "カラーをランダム"
+        randomColor: "カラーをランダム",
+        previewPlaceholder: "プレビュー画像"
     },
     ko: {
         title: "나만의 완벽한 아바타 만들기",
@@ -133,7 +139,8 @@ const translations = {
         generateBtn: "아바타 생성",
         randomize: "무작위",
         download: "다운로드",
-        randomColor: "색상 무작위"
+        randomColor: "색상 무작위",
+        previewPlaceholder: "미리보기 이미지"
     },
     ru: {
         title: "Создайте Свой Идеальный Аватар",
@@ -152,7 +159,8 @@ const translations = {
         generateBtn: "Создать Аватар",
         randomize: "Случайно",
         download: "Скачать",
-        randomColor: "Случайные Цвета"
+        randomColor: "Случайные Цвета",
+        previewPlaceholder: "Изображение для предварительного просмотра"
     },
     ar: {
         title: "أنشئ الصورة الرمزية المثالية",
@@ -171,7 +179,8 @@ const translations = {
         generateBtn: "إنشاء الصورة",
         randomize: "عشوائي",
         download: "تحميل",
-        randomColor: "ألوان عشوائية"
+        randomColor: "ألوان عشوائية",
+        previewPlaceholder: "صورة معاينة"
     },
     hi: {
         title: "अपना परफेक्ट अवतार बनाएं",
@@ -190,7 +199,8 @@ const translations = {
         generateBtn: "अवतार बनाएं",
         randomize: "रैंडम",
         download: "डाउनलोड",
-        randomColor: "रंग यादृच्छिक करें"
+        randomColor: "रंग यादृच्छिक करें",
+        previewPlaceholder: "पूर्वावलोकन छवि"
     },
     pt: {
         title: "Crie Seu Avatar Perfeito",
@@ -209,7 +219,8 @@ const translations = {
         generateBtn: "Gerar Avatar",
         randomize: "Aleatório",
         download: "Baixar",
-        randomColor: "Cores Aleatórias"
+        randomColor: "Cores Aleatórias",
+        previewPlaceholder: "Imagem de pré-visualização"
     }
 };
 

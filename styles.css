@@ -80,13 +80,12 @@ button {
 
 /* 统一滑块样式 */
 input[type="range"] {
-    -webkit-appearance: none;
     width: 100%;
     height: 6px;
     background: linear-gradient(to right, #4A90E2, #9B51E0);
     border-radius: 3px;
-    outline: none;
-    margin: 10px 0;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 /* 统一滑块按钮样式 */
@@ -107,21 +106,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* 统一数值显示样式 */
+/* 移除滑块数值显示相关样式 */
 #complexityValue,
-#rotationValue {
-    min-width: 48px;
-    text-align: right;
-    font-family: monospace;
-    color: #4A5568;
-    font-size: 0.875rem;
+#rotationValue,
+#colorfulnessValue {
+    display: none;
 }
 
-/* 确保滑块容器布局一致 */
+/* 调整滑块容器样式，使其更加紧凑 */
 .flex.items-center.gap-4 {
     display: flex;
     align-items: center;
-    gap: 1rem;
     width: 100%;
 }
 
@@ -319,6 +314,291 @@ select:hover {
             rgba(87, 235, 66, 0.4),     /* 霓虹绿 */
             rgba(247, 235, 66, 0.4)     /* 明黄色 */
         );
+    }
+}
+
+/* 修改顶栏样式 */
+header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* 顶栏Logo样式 */
+header .text-2xl {
+    background: linear-gradient(120deg, #4A90E2, #9B51E0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* 语言选择器样式优化 */
+.custom-select {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.custom-select:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    header {
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .custom-select {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .custom-select:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    header .text-2xl {
+        background: linear-gradient(120deg, #60A5FA, #C084FC);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+/* 添加预览区域的占位样式 */
+.preview-container {
+    position: relative;
+}
+
+.preview-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    pointer-events: none;
+}
+
+.preview-placeholder svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.7;
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    .preview-placeholder {
+        color: #64748b;
+    }
+}
+
+/* 添加风格选择下拉菜单样式 */
+#styleSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+/* 暗黑模式下的箭头颜色调整 */
+@media (prefers-color-scheme: dark) {
+    #styleSelect {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    }
+}
+
+/* 美化下拉菜单样式 */
+#styleSelect {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#styleSelect:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#styleSelect:focus {
+    outline: none;
+    border-color: rgba(74, 144, 226, 0.5);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    #styleSelect {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e5e5e5;
+    }
+
+    #styleSelect:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #styleSelect:focus {
+        border-color: rgba(96, 165, 250, 0.5);
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+    }
+
+    #styleSelect option {
+        background-color: #1f2937;
+        color: #e5e5e5;
+    }
+}
+
+/* 统一按钮基础样式 */
+.btn-primary,
+.btn-secondary,
+.btn-generate,
+.btn-download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 48px;
+    padding: 0 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+/* 随机颜色按钮 */
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* 随机生成按钮 */
+.btn-secondary {
+    background: linear-gradient(135deg, #4A90E2, #967ADC);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* 生成头像按钮 */
+.btn-generate {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: white;
+}
+
+.btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* 修改下载头像按钮样式 */
+#download-btn {
+    background: linear-gradient(135deg, #10B981, #3B82F6);  /* 改为绿蓝渐变色 */
+    color: white;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+#download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    .btn-primary,
+    .btn-secondary,
+    .btn-generate,
+    .btn-download {
+        opacity: 0.9;
+    }
+    
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-generate:hover,
+    .btn-download:hover {
+        opacity: 1;
+    }
+    
+    #download-btn {
+        opacity: 0.9;
+    }
+    
+    #download-btn:hover {
+        opacity: 1;
+    }
+}
+
+/* 调整按钮容器的间距 */
+.randomize-container,
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* 修改随机生成按钮样式 */
+#randomize-btn {
+    background: linear-gradient(135deg, #4A90E2, #967ADC);  /* 改为蓝紫渐变色 */
+    color: white;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+#randomize-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    #randomize-btn {
+        opacity: 0.9;
+    }
+    
+    #randomize-btn:hover {
+        opacity: 1;
     }
 }
 
