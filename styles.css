@@ -1,0 +1,325 @@
+/* 预览区域样式 */
+.preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.preview-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.randomize-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.preview-container:hover {
+    transform: scale(1.02) translateY(-5px);
+}
+
+#avatarCanvas {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.controls select,
+.controls input {
+    transition: all 0.2s;
+}
+
+.controls select:hover,
+.controls input:hover {
+    border-color: #666;
+}
+
+button {
+    transition: all 0.2s;
+}
+
+.controls button {
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.controls button:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* 更新滑块容器样式 */
+.controls .space-y-4 > div {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* 统一滑块样式 */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(to right, #4A90E2, #9B51E0);
+    border-radius: 3px;
+    outline: none;
+    margin: 10px 0;
+}
+
+/* 统一滑块按钮样式 */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border: 2px solid #4A90E2;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* 统一数值显示样式 */
+#complexityValue,
+#rotationValue {
+    min-width: 48px;
+    text-align: right;
+    font-family: monospace;
+    color: #4A5568;
+    font-size: 0.875rem;
+}
+
+/* 确保滑块容器布局一致 */
+.flex.items-center.gap-4 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.controls select {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 语言选择器样式 */
+#language {
+    min-width: 140px;
+    padding-left: 2.5rem;
+}
+
+/* 国旗图标样式 */
+.flag-icon {
+    width: 24px;
+    height: 18px;
+    object-fit: cover;
+}
+
+/* 选择框样式 */
+select option {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+}
+
+/* 移除默认的下拉箭头 */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+}
+
+select:hover {
+    border-color: #4A90E2;
+}
+
+/* 添加响应式间距 */
+@media (max-width: 768px) {
+    .preview-section {
+        gap: 1rem;
+    }
+    
+    .preview-container,
+    .randomize-container {
+        max-width: 100%;
+    }
+}
+
+/* 添加语言选择器的样式 */
+.custom-select-wrapper {
+    position: relative;
+    z-index: 1000;
+}
+
+.custom-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    min-width: 120px;
+    padding: 6px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.custom-select:hover {
+    border-color: #4A90E2;
+}
+
+.custom-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.custom-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.custom-option:hover {
+    background-color: #f3f4f6;
+}
+
+.flag-icon {
+    width: 24px;
+    height: 18px;
+    object-fit: cover;
+}
+
+.selected-text {
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+    .custom-select,
+    .custom-options {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+
+    .custom-option:hover {
+        background-color: #4a5568;
+    }
+
+    .selected-text {
+        color: #e2e8f0;
+    }
+}
+
+/* 修改背景动画 */
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(
+        45deg,
+        rgba(66, 99, 235, 0.3),   /* 明亮的蓝色 */
+        rgba(233, 89, 180, 0.3),   /* 霓虹粉 */
+        rgba(66, 218, 235, 0.3),   /* 青色 */
+        rgba(235, 66, 120, 0.3),   /* 玫红 */
+        rgba(191, 85, 236, 0.3),   /* 紫色 */
+        rgba(87, 235, 66, 0.3),    /* 霓虹绿 */
+        rgba(247, 235, 66, 0.3)    /* 明黄色 */
+    );
+    background-size: 400% 400%;
+    animation: gradientBG 20s ease infinite; /* 增加动画时间到20秒 */
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 50% 100%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    75% {
+        background-position: 50% 0%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* 暗黑模式下的背景 */
+@media (prefers-color-scheme: dark) {
+    .background-animation {
+        background: linear-gradient(
+            45deg,
+            rgba(66, 99, 235, 0.4),    /* 明亮的蓝色 */
+            rgba(233, 89, 180, 0.4),    /* 霓虹粉 */
+            rgba(66, 218, 235, 0.4),    /* 青色 */
+            rgba(235, 66, 120, 0.4),    /* 玫红 */
+            rgba(191, 85, 236, 0.4),    /* 紫色 */
+            rgba(87, 235, 66, 0.4),     /* 霓虹绿 */
+            rgba(247, 235, 66, 0.4)     /* 明黄色 */
+        );
+    }
+}
+
+// ... 其他国旗的 SVG 数据 ... 
